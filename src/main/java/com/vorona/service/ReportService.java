@@ -76,8 +76,8 @@ public class ReportService {
                 }
             }
 
-            if (currentEmployee.getSubordinates() != null) {
-                for (Employee child : currentEmployee.getSubordinates()) {
+            if (currentEmployee.subordinates() != null) {
+                for (Employee child : currentEmployee.subordinates()) {
                     employeeQueue.add(child);
                     hierarchyLevelQueue.add(currentLevel + 1);
                 }
@@ -94,12 +94,12 @@ public class ReportService {
 
         while (!queue.isEmpty()) {
             Employee currentEmployee = queue.poll();
-            if (!currentEmployee.getSubordinates().isEmpty()) {
-                Set<Employee> subordinates = currentEmployee.getSubordinates();
+            if (!currentEmployee.subordinates().isEmpty()) {
+                Set<Employee> subordinates = currentEmployee.subordinates();
                 queue.addAll(subordinates);
                 BigDecimal salaryLimit = salaryLimitCalculationFunction.apply(currentEmployee);
-                if (condition.test(currentEmployee.getSalary(), salaryLimit)) {
-                    BigDecimal salaryDiff = salaryLimit.subtract(currentEmployee.getSalary()).abs();
+                if (condition.test(currentEmployee.salary(), salaryLimit)) {
+                    BigDecimal salaryDiff = salaryLimit.subtract(currentEmployee.salary()).abs();
                     if (result.containsKey(salaryDiff)) {
                         result.get(salaryDiff).add(currentEmployee);
                     } else {

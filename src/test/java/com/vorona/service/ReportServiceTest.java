@@ -35,13 +35,15 @@ class ReportServiceTest {
 
     @BeforeEach
     void setup() {
-        employee = new Employee("300", "Alice", "Hasacat", new BigDecimal("50000"));
-        Employee employee2 = new Employee("301", "Jane", "Doe", new BigDecimal("50000"));
-        manager = new Employee("224", "Martin", "Chekov", new BigDecimal("45000"));
-        manager.addSubordinate(employee);
-        manager.addSubordinate(employee2);
-        ceo = new Employee("123", "Joe", "Doe", new BigDecimal("60000"));
-        ceo.addSubordinate(manager);
+        employee = new Employee("300", "Alice", "Hasacat", new BigDecimal("50000"), new HashSet<>());
+        Employee employee2 = new Employee("301", "Jane", "Doe", new BigDecimal("50000"), new HashSet<>());
+        Set<Employee> managerSubordinates = new HashSet<>();
+        managerSubordinates.add(employee);
+        managerSubordinates.add(employee2);
+        manager = new Employee("224", "Martin", "Chekov", new BigDecimal("45000"), managerSubordinates);
+        Set<Employee> ceoSubordinates = new HashSet<>();
+        ceoSubordinates.add(manager);
+        ceo = new Employee("123", "Joe", "Doe", new BigDecimal("60000"), ceoSubordinates);
         company = new Company(ceo);
     }
 
@@ -122,12 +124,23 @@ class ReportServiceTest {
     }
 
     private void buildLongReportingLine() {
-        Employee employee4 = new Employee("400", "Alice", "Hasacat", new BigDecimal("50000"));
-        Employee employee5 = new Employee("500", "Alice", "Hasacat", new BigDecimal("50000"));
-        employeeWithLongReportingLine = new Employee("600", "Alice", "Hasacat", new BigDecimal("50000"));
-        employee.addSubordinate(employee4);
-        employee4.addSubordinate(employee5);
-        employee5.addSubordinate(employeeWithLongReportingLine);
+        Employee employee4 = new Employee("400", "Alice", "Hasacat", new BigDecimal("50000"), new HashSet<>());
+        Employee employee5 = new Employee("500", "Alice", "Hasacat", new BigDecimal("50000"), new HashSet<>());
+        employeeWithLongReportingLine = new Employee("600", "Alice", "Hasacat", new BigDecimal("50000"), new HashSet<>());
+        employee5 = employee5.withAddedSubordinate(employeeWithLongReportingLine);
+        employee4 = employee4.withAddedSubordinate(employee5);
+        Set<Employee> employeeSubordinates = new HashSet<>();
+        employeeSubordinates.add(employee4);
+        employee = new Employee("300", "Alice", "Hasacat", new BigDecimal("50000"), employeeSubordinates);
+        Employee employee2 = new Employee("301", "Jane", "Doe", new BigDecimal("50000"), new HashSet<>());
+        Set<Employee> managerSubordinates = new HashSet<>();
+        managerSubordinates.add(employee);
+        managerSubordinates.add(employee2);
+        manager = new Employee("224", "Martin", "Chekov", new BigDecimal("45000"), managerSubordinates);
+        Set<Employee> ceoSubordinates = new HashSet<>();
+        ceoSubordinates.add(manager);
+        ceo = new Employee("123", "Joe", "Doe", new BigDecimal("60000"), ceoSubordinates);
+        company = new Company(ceo);
     }
 
 }

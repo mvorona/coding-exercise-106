@@ -4,6 +4,8 @@ import com.vorona.model.Employee;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -13,7 +15,7 @@ class SalaryServiceTest {
 
     @Test
     void calculateSalaryLowerLimitForManager_shouldReturn0IfEmployeeHasNoSubordinates() {
-        Employee employee = new Employee("1", "firstName", "lastName", BigDecimal.TEN);
+        Employee employee = new Employee("1", "firstName", "lastName", BigDecimal.TEN, new HashSet<>());
 
         BigDecimal result = salaryService.calculateSalaryLowerLimitForManager(employee);
 
@@ -22,11 +24,12 @@ class SalaryServiceTest {
 
     @Test
     void calculateSalaryLowerLimitForManager_shouldReturnCorrectLowerLimit() {
-        Employee employee = new Employee("1", "firstName", "lastName", BigDecimal.TEN);
-        Employee subordinate1 = new Employee("2", "firstName", "lastName", new BigDecimal("100"));
-        Employee subordinate2 = new Employee("3", "firstName", "lastName", new BigDecimal("200"));
-        employee.addSubordinate(subordinate1);
-        employee.addSubordinate(subordinate2);
+        Employee subordinate1 = new Employee("2", "firstName", "lastName", new BigDecimal("100"), new HashSet<>());
+        Employee subordinate2 = new Employee("3", "firstName", "lastName", new BigDecimal("200"), new HashSet<>());
+        Set<Employee> subordinates = new HashSet<>();
+        subordinates.add(subordinate1);
+        subordinates.add(subordinate2);
+        Employee employee = new Employee("1", "firstName", "lastName", BigDecimal.TEN, subordinates);
 
         BigDecimal result = salaryService.calculateSalaryLowerLimitForManager(employee);
 
@@ -35,7 +38,7 @@ class SalaryServiceTest {
 
     @Test
     void calculateSalaryUpperLimitForManager_shouldReturn0IfEmployeeHasNoSubordinates() {
-        Employee employee = new Employee("1", "firstName", "lastName", BigDecimal.TEN);
+        Employee employee = new Employee("1", "firstName", "lastName", BigDecimal.TEN, new HashSet<>());
 
         BigDecimal result = salaryService.calculateSalaryUpperLimitForManager(employee);
 
@@ -44,11 +47,12 @@ class SalaryServiceTest {
 
     @Test
     void calculateSalaryUpperLimitForManager_shouldReturnCorrectUpperLimit() {
-        Employee employee = new Employee("1", "firstName", "lastName", BigDecimal.TEN);
-        Employee subordinate1 = new Employee("2", "firstName", "lastName", new BigDecimal("100"));
-        Employee subordinate2 = new Employee("3", "firstName", "lastName", new BigDecimal("200"));
-        employee.addSubordinate(subordinate1);
-        employee.addSubordinate(subordinate2);
+        Employee subordinate1 = new Employee("2", "firstName", "lastName", new BigDecimal("100"), new HashSet<>());
+        Employee subordinate2 = new Employee("3", "firstName", "lastName", new BigDecimal("200"), new HashSet<>());
+        Set<Employee> subordinates = new HashSet<>();
+        subordinates.add(subordinate1);
+        subordinates.add(subordinate2);
+        Employee employee = new Employee("1", "firstName", "lastName", BigDecimal.TEN, subordinates);
 
         BigDecimal result = salaryService.calculateSalaryUpperLimitForManager(employee);
 

@@ -37,11 +37,11 @@ public class SalaryService {
     }
 
     private static BigDecimal getAverageDirectSubordinatesSalary(Employee manager) {
-        Set<Employee> subordinates = manager.getSubordinates();
+        Set<Employee> subordinates = manager.subordinates();
         BigDecimal directSubordinatesSalarySum = BigDecimal.ZERO;
         if (!subordinates.isEmpty()) {
             for (Employee child : subordinates) {
-                directSubordinatesSalarySum = directSubordinatesSalarySum.add(child.getSalary());
+                directSubordinatesSalarySum = directSubordinatesSalarySum.add(child.salary());
             }
             return directSubordinatesSalarySum.divide(new BigDecimal(subordinates.size()), RoundingMode.HALF_UP);
         }

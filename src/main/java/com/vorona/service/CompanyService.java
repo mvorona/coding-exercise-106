@@ -9,10 +9,8 @@ import com.vorona.repository.EmployeeRepository;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,45 +40,40 @@ public class CompanyService {
         }
         Map<String, Set<EmployeeDto>> managerToSubordinatesMap = mapManagerToSubordinates(employeesData);
         Employee ceo = getCeo(managerToSubordinatesMap);
-        buildCompanyHierarchy(ceo, managerToSubordinatesMap);
+        ceo = buildCompanyHierarchy(ceo, managerToSubordinatesMap);
         return new Company(ceo);
     }
 
     private Map<String, Set<EmployeeDto>> mapManagerToSubordinates(Set<EmployeeDto> employeesData) {
         Map<String, Set<EmployeeDto>> managerToSubordinatesMap = new HashMap<>();
         employeesData.forEach(employeeDto -> {
-            if (managerToSubordinatesMap.containsKey(employeeDto.managerId())) {
-                managerToSubordinatesMap.get(employeeDto.managerId()).add(employeeDto);
-            } else {
-                Set<EmployeeDto> subordinates = new HashSet<>();
-                subordinates.add(employeeDto);
-                managerToSubordinatesMap.put(employeeDto.managerId(), subordinates);
-            }
+            managerToSubordinatesMap
+                    .computeIfAbsent(employeeDto.managerId(), k -> new HashSet<>())
+                    .add(employeeDto);
         });
         return managerToSubordinatesMap;
     }
 
     private Employee getCeo(Map<String, Set<EmployeeDto>> employeeDataSource) {
-        Optional<EmployeeDto> ceoDto = employeeDataSource.get(CEO_MANAGER_ID)
-                .stream()
-                .findFirst();
+        Optional<EmployeeDto> ceoDto = Optional.ofNullable(employeeDataSource.get(CEO_MANAGER_ID))
+                .flatMap(set -> set.stream().findFirst());
         if (ceoDto.isEmpty()) {
             throw new ApplicationException("CEO not found");
         }
         return EmployeeMapper.map(ceoDto.orElse(null));
     }
 
-    private void buildCompanyHierarchy(Employee ceo, Map<String, Set<EmployeeDto>> employeeDataSource) {
-        Queue<Employee> employeeQueue = new LinkedList<>();
-        employeeQueue.add(ceo);
-        while (!employeeQueue.isEmpty()) {
-            Employee employee = employeeQueue.poll();
-            Set<EmployeeDto> subordinateDtos = employeeDataSource.get(employee.getId());
-            if (subordinateDtos != null) {
-                Set<Employee> subordinates = subordinateDtos.stream().map(EmployeeMapper::map).collect(Collectors.toSet());
-                employee.addSubordinates(subordinates);
-                subordinates.forEach(employeeQueue::offer);
-            }
+    private Employee buildCompanyHierarchy(Employee employee, Map<String, Set<EmployeeDto>> employeeDataSource) {
+        Set<EmployeeDto> subordinateDtos = employeeDataSource.get(employee.id());
+        if (subordinateDtos == null || subordinateDtos.isEmpty()) {
+            return employee;
         }
+
+        Set<Employee> subordinates = subordinateDtos.stream()
+                .map(EmployeeMapper::map)
+                .map(subordinate -> buildCompanyHierarchy(subordinate, employeeDataSource))
+                .collect(Collectors.toSet());
+
+        return employee.withAddedSubordinates(subordinates);
     }
 }

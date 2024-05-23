@@ -87,26 +87,23 @@ class CompanyServiceTest {
     }
 
     private static Company getExpectedResult() {
-        Employee employee = new Employee("300", "Alice", "Hasacat", new BigDecimal("50000"));
-        Employee employee2 = new Employee("301", "Jane", "Doe", new BigDecimal("50000"));
-        Employee manager = new Employee("124", "Martin", "Chekov", new BigDecimal("45000"));
+        Employee employee = new Employee("300", "Alice", "Hasacat", new BigDecimal("50000"), new HashSet<>());
+        Employee employee2 = new Employee("301", "Jane", "Doe", new BigDecimal("50000"), new HashSet<>());
         Set<Employee> managerSubordinates = new HashSet<>();
         managerSubordinates.add(employee);
         managerSubordinates.add(employee2);
-        manager.addSubordinates(managerSubordinates);
-        Employee ceo = new Employee("123", "Joe", "Doe", new BigDecimal("60000"));
+        Employee manager = new Employee("124", "Martin", "Chekov", new BigDecimal("45000"), managerSubordinates);
         Set<Employee> ceoSubordinates = new HashSet<>();
         ceoSubordinates.add(manager);
-        ceo.addSubordinates(ceoSubordinates);
+        Employee ceo = new Employee("123", "Joe", "Doe", new BigDecimal("60000"), ceoSubordinates);
         return new Company(ceo);
     }
 
     private static Company getCompanyExpectedResultForDuplicates() {
-        Employee employee = new Employee("124", "Martin", "Chekov", new BigDecimal("45000"));
-        Employee ceo = new Employee("123", "Joe", "Doe", new BigDecimal("60000"));
+        Employee employee = new Employee("124", "Martin", "Chekov", new BigDecimal("45000"), new HashSet<>());
         Set<Employee> subordinates = new HashSet<>();
         subordinates.add(employee);
-        ceo.addSubordinates(subordinates);
+        Employee ceo = new Employee("123", "Joe", "Doe", new BigDecimal("60000"), subordinates);
         return new Company(ceo);
     }
 }
