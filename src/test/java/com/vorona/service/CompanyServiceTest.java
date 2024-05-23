@@ -5,11 +5,8 @@ import com.vorona.model.Company;
 import com.vorona.model.Employee;
 import com.vorona.model.EmployeeDto;
 import com.vorona.repository.EmployeeRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -17,34 +14,35 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class CompanyServiceTest {
 
-    @Mock
-    private EmployeeRepository repository;
-
-    @InjectMocks
+    private InMemoryEmployeeRepository repository;
     private CompanyService service;
+
+    @BeforeEach
+    void setUp() {
+        repository = new InMemoryEmployeeRepository();
+        service = new CompanyService(repository);
+    }
 
     @Test
     void shouldThrowExceptionIfEmployeeDataIsEmpty() {
-        when(repository.getEmployees()).thenReturn(new HashSet<>());
+        repository.setEmployees(new HashSet<>());
 
         assertThrows(ApplicationException.class, () -> service.getCompanyHierarchy());
     }
 
     @Test
     void shouldThrowExceptionIfEmployeeDataIsNull() {
-        when(repository.getEmployees()).thenReturn(null);
+        repository.setEmployees(null);
 
         assertThrows(ApplicationException.class, () -> service.getCompanyHierarchy());
     }
 
     @Test
     void shouldReturnCorrectCompanyHierarchy() {
-        when(repository.getEmployees()).thenReturn(buildValidRepositoryData());
+        repository.setEmployees(buildValidRepositoryData());
 
         Company result = service.getCompanyHierarchy();
 
@@ -54,7 +52,7 @@ class CompanyServiceTest {
 
     @Test
     void shouldReturnCorrectCompanyHierarchyIfThereAreDuplicatedEmployees() {
-        when(repository.getEmployees()).thenReturn(buildRepositoryDataWithDuplicatedEmployees());
+        repository.setEmployees(buildRepositoryDataWithDuplicatedEmployees());
 
         Company result = service.getCompanyHierarchy();
 
@@ -105,5 +103,18 @@ class CompanyServiceTest {
         subordinates.add(employee);
         Employee ceo = new Employee("123", "Joe", "Doe", new BigDecimal("60000"), subordinates);
         return new Company(ceo);
+    }
+}
+
+class InMemoryEmployeeRepository implements EmployeeRepository {
+    private Set<EmployeeDto> employees;
+
+    @Override
+    public Set<EmployeeDto> getEmployees() {
+        return employees;
+    }
+
+    public void setEmployees(Set<EmployeeDto> employees) {
+        this.employees = employees;
     }
 }

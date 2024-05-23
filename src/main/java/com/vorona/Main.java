@@ -6,6 +6,7 @@ import com.vorona.repository.CsvEmployeeRepository;
 import com.vorona.repository.EmployeeRepository;
 import com.vorona.service.CompanyService;
 import com.vorona.service.ReportService;
+import com.vorona.service.DefaultSalaryService;
 import com.vorona.service.SalaryService;
 
 import java.math.BigDecimal;
@@ -17,7 +18,7 @@ public class Main {
         // Configure classes
         EmployeeRepository repository = new CsvEmployeeRepository("src/main/resources/big_company.csv");
         CompanyService companyService = new CompanyService(repository);
-        SalaryService salaryService = new SalaryService();
+        SalaryService salaryService = new DefaultSalaryService();
         ReportService reportService = new ReportService(salaryService);
 
         Company company = companyService.getCompanyHierarchy();

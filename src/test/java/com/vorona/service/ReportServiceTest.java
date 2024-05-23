@@ -4,27 +4,19 @@ import com.vorona.model.Company;
 import com.vorona.model.Employee;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class ReportServiceTest {
 
-    @Mock
-    private SalaryService salaryService;
-
-    @InjectMocks
+    private TestSalaryService salaryService;
     private ReportService service;
 
     private Employee ceo;
@@ -35,6 +27,9 @@ class ReportServiceTest {
 
     @BeforeEach
     void setup() {
+        salaryService = new TestSalaryService();
+        service = new ReportService(salaryService);
+
         employee = new Employee("300", "Alice", "Hasacat", new BigDecimal("50000"), new HashSet<>());
         Employee employee2 = new Employee("301", "Jane", "Doe", new BigDecimal("50000"), new HashSet<>());
         Set<Employee> managerSubordinates = new HashSet<>();
@@ -49,8 +44,8 @@ class ReportServiceTest {
 
     @Test
     void getUnderpaidEmployees_shouldReturnUnderpaidEmployees() {
-        when(salaryService.calculateSalaryLowerLimitForManager(ceo)).thenReturn(new BigDecimal("65000"));
-        when(salaryService.calculateSalaryLowerLimitForManager(manager)).thenReturn(new BigDecimal("48000"));
+        salaryService.setLowerLimit(ceo, new BigDecimal("65000"));
+        salaryService.setLowerLimit(manager, new BigDecimal("48000"));
 
         Map<BigDecimal, Set<Employee>> result = service.getUnderpaidEmployees(company);
 
@@ -67,8 +62,8 @@ class ReportServiceTest {
 
     @Test
     void getUnderpaidEmployees_shouldNotReturnUnderpaidEmployeesIfTheSalaryIsWithinRange() {
-        when(salaryService.calculateSalaryLowerLimitForManager(ceo)).thenReturn(new BigDecimal("60000"));
-        when(salaryService.calculateSalaryLowerLimitForManager(manager)).thenReturn(new BigDecimal("45000"));
+        salaryService.setLowerLimit(ceo, new BigDecimal("60000"));
+        salaryService.setLowerLimit(manager, new BigDecimal("45000"));
 
         Map<BigDecimal, Set<Employee>> result = service.getUnderpaidEmployees(company);
 
@@ -77,8 +72,8 @@ class ReportServiceTest {
 
     @Test
     void getOverpaidEmployees_shouldReturnOverpaidEmployees() {
-        when(salaryService.calculateSalaryUpperLimitForManager(ceo)).thenReturn(new BigDecimal("58000"));
-        when(salaryService.calculateSalaryUpperLimitForManager(manager)).thenReturn(new BigDecimal("44000"));
+        salaryService.setUpperLimit(ceo, new BigDecimal("58000"));
+        salaryService.setUpperLimit(manager, new BigDecimal("44000"));
 
         Map<BigDecimal, Set<Employee>> result = service.getOverpaidEmployees(company);
 
@@ -95,8 +90,8 @@ class ReportServiceTest {
 
     @Test
     void getOverpaidEmployees_shouldNotReturnOverpaidEmployeesIfTheSalaryIsWithinRange() {
-        when(salaryService.calculateSalaryUpperLimitForManager(ceo)).thenReturn(new BigDecimal("60000"));
-        when(salaryService.calculateSalaryUpperLimitForManager(manager)).thenReturn(new BigDecimal("45000"));
+        salaryService.setUpperLimit(ceo, new BigDecimal("60000"));
+        salaryService.setUpperLimit(manager, new BigDecimal("45000"));
 
         Map<BigDecimal, Set<Employee>> result = service.getOverpaidEmployees(company);
 
@@ -142,5 +137,27 @@ class ReportServiceTest {
         ceo = new Employee("123", "Joe", "Doe", new BigDecimal("60000"), ceoSubordinates);
         company = new Company(ceo);
     }
+}
 
+class TestSalaryService implements SalaryService {
+    private final Map<Employee, BigDecimal> lowerLimits = new HashMap<>();
+    private final Map<Employee, BigDecimal> upperLimits = new HashMap<>();
+
+    void setLowerLimit(Employee employee, BigDecimal limit) {
+        lowerLimits.put(employee, limit);
+    }
+
+    void setUpperLimit(Employee employee, BigDecimal limit) {
+        upperLimits.put(employee, limit);
+    }
+
+    @Override
+    public BigDecimal calculateSalaryLowerLimitForManager(Employee manager) {
+        return lowerLimits.getOrDefault(manager, BigDecimal.ZERO);
+    }
+
+    @Override
+    public BigDecimal calculateSalaryUpperLimitForManager(Employee manager) {
+        return upperLimits.getOrDefault(manager, BigDecimal.ZERO);
+    }
 }

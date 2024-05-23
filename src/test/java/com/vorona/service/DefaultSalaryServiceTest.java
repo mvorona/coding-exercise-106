@@ -9,9 +9,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class SalaryServiceTest {
+class DefaultSalaryServiceTest {
 
-    private SalaryService salaryService = new SalaryService();
+    private DefaultSalaryService salaryService = new DefaultSalaryService();
 
     @Test
     void calculateSalaryLowerLimitForManager_shouldReturn0IfEmployeeHasNoSubordinates() {
